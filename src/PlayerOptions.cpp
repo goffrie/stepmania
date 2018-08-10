@@ -261,6 +261,7 @@ void PlayerOptions::GetMods( vector<RString> &AddTo, bool bForceNoteSkin ) const
 	if( m_bTransforms[TRANSFORM_NOROLLS] )	AddTo.push_back( "NoRolls" );
 	if( m_bTransforms[TRANSFORM_NOMINES] )	AddTo.push_back( "NoMines" );
 	if( m_bTransforms[TRANSFORM_LITTLE] )	AddTo.push_back( "Little" );
+	if( m_bTransforms[TRANSFORM_LESS_LITTLE] )	AddTo.push_back( "LessLittle" );
 	if( m_bTransforms[TRANSFORM_WIDE] )	AddTo.push_back( "Wide" );
 	if( m_bTransforms[TRANSFORM_BIG] )		AddTo.push_back( "Big" );
 	if( m_bTransforms[TRANSFORM_QUICK] )	AddTo.push_back( "Quick" );
@@ -491,6 +492,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 	else if( sBit == "softshuffle" )				m_bTurns[TURN_SOFT_SHUFFLE] = on;
 	else if( sBit == "supershuffle" )			m_bTurns[TURN_SUPER_SHUFFLE] = on;
 	else if( sBit == "little" )				m_bTransforms[TRANSFORM_LITTLE] = on;
+	else if( sBit == "lesslittle" )				m_bTransforms[TRANSFORM_LESS_LITTLE] = on;
 	else if( sBit == "wide" )				m_bTransforms[TRANSFORM_WIDE] = on;
 	else if( sBit == "big" )				m_bTransforms[TRANSFORM_BIG] = on;
 	else if( sBit == "quick" )				m_bTransforms[TRANSFORM_QUICK] = on;
@@ -541,7 +543,7 @@ bool PlayerOptions::FromOneModString( const RString &sOneMod, RString &sErrorOut
 		m_sNoteSkin = CommonMetrics::DEFAULT_NOTESKIN_NAME;
 	}
 	else if( sBit == "randomspeed" ) 			SET_FLOAT( fRandomSpeed )
-	else if( sBit == "failarcade" || 
+	else if( sBit == "failarcade" ||
 		 sBit == "failimmediate" )			m_FailType = FailType_Immediate;
 	else if( sBit == "failendofsong" ||
 		 sBit == "failimmediatecontinue" )		m_FailType = FailType_ImmediateContinue;
@@ -889,22 +891,23 @@ bool PlayerOptions::IsEasierForSongAndSteps( Song* pSong, Steps* pSteps, PlayerN
 	if( m_bTransforms[TRANSFORM_NOSTRETCH] )
 		return true;
 
-	// Inserted holds can be really easy on some songs, and scores will be 
+	// Inserted holds can be really easy on some songs, and scores will be
 	// highly hold-weighted, and very little tap score weighted.
 	if( m_bTransforms[TRANSFORM_LITTLE] )	return true;
+	if( m_bTransforms[TRANSFORM_LESS_LITTLE] )	return true;
 	if( m_bTransforms[TRANSFORM_PLANTED] )	return true;
 	if( m_bTransforms[TRANSFORM_FLOORED] )	return true;
 	if( m_bTransforms[TRANSFORM_TWISTER] )	return true;
 
 	// This makes songs with sparse notes easier.
 	if( m_bTransforms[TRANSFORM_ECHO] )	return true;
-	
+
 	// Removing attacks is easier in general.
 	if ((m_fNoAttack && pSteps->HasAttacks()) || m_fRandAttack)
 		return true;
-	
+
 	if( m_fCover )	return true;
-	
+
 	// M-mods make songs with indefinite BPMs easier because
 	// they ensure that the song has a scrollable speed.
 	if( m_fMaxScrollBPM != 0 )
@@ -1058,7 +1061,7 @@ void PlayerOptions::ResetPrefs( ResetPrefsType type )
 #include "LuaBinding.h"
 #include "OptionsBinding.h"
 
-/** @brief Allow Lua to have access to PlayerOptions. */ 
+/** @brief Allow Lua to have access to PlayerOptions. */
 class LunaPlayerOptions: public Luna<PlayerOptions>
 {
 public:
@@ -1141,6 +1144,7 @@ public:
 	BOOL_INTERFACE(NoRolls, Transforms[PlayerOptions::TRANSFORM_NOROLLS]);
 	BOOL_INTERFACE(NoMines, Transforms[PlayerOptions::TRANSFORM_NOMINES]);
 	BOOL_INTERFACE(Little, Transforms[PlayerOptions::TRANSFORM_LITTLE]);
+	BOOL_INTERFACE(LessLittle, Transforms[PlayerOptions::TRANSFORM_LESS_LITTLE]);
 	BOOL_INTERFACE(Wide, Transforms[PlayerOptions::TRANSFORM_WIDE]);
 	BOOL_INTERFACE(Big, Transforms[PlayerOptions::TRANSFORM_BIG]);
 	BOOL_INTERFACE(Quick, Transforms[PlayerOptions::TRANSFORM_QUICK]);
@@ -1406,7 +1410,7 @@ public:
 		OPTIONAL_RETURN_SELF(original_top);
 		return 2;
 	}
-	
+
 	static int Distant(T* p, lua_State* L)
 	{
 		int original_top= lua_gettop(L);
@@ -1521,6 +1525,7 @@ public:
 		ADD_METHOD(NoRolls);
 		ADD_METHOD(NoMines);
 		ADD_METHOD(Little);
+		ADD_METHOD(LessLittle);
 		ADD_METHOD(Wide);
 		ADD_METHOD(Big);
 		ADD_METHOD(Quick);
@@ -1569,7 +1574,7 @@ LUA_REGISTER_CLASS( PlayerOptions )
 /*
  * (c) 2001-2004 Chris Danford, Glenn Maynard
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -1579,7 +1584,7 @@ LUA_REGISTER_CLASS( PlayerOptions )
  * copyright notice(s) and this permission notice appear in all copies of
  * the Software and that both the above copyright notice(s) and this
  * permission notice appear in supporting documentation.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
